@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  app_crear:
+    build: .
+    ports:
+      - "5001:5001"
+    depends_on:
+      - db
+    networks:
+      - gestion-usuarios-net
+    command: python microservicios/crear_usuario.py
+
+  app_obtener:
+    build: .
+    ports:
+      - "5002:5002"
+    depends_on:
+      - db
+    networks:
+      - gestion-usuarios-net
+    command: python microservicios/obtener_usuarios.py
+
+  app_obtener_id:
+    build: .
+    ports:
+      - "5003:5003"
+    depends_on:
+      - db
+    networks:
+      - gestion-usuarios-net
+    command: python microservicios/obtener_usuario.py
+
+  app_actualizar:
+    build: .
+    ports:
+      - "5008:5008"
+    depends_on:
+      - db
+    networks:
+      - gestion-usuarios-net
+    command: python microservicios/actualizar_usuario.py
+
+  app_eliminar:
+    build: .
+    ports:
+      - "5005:5005"
+    depends_on:
+      - db
+    networks:
+      - gestion-usuarios-net
+    command: python microservicios/eliminar_usuario.py
+
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: gestion_usuarios
+    ports:
+      - "5432:5432"
+    networks:
+      - gestion-usuarios-net
+
+networks:
+  gestion-usuarios-net:
+    driver: bridge

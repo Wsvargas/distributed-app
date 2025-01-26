@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  app_create:
+    build: .
+    ports:
+      - "5001:5001"
+    depends_on:
+      - db
+    networks:
+      - users-management-net
+    command: python microservices/create_user.py
+
+  app_get:
+    build: .
+    ports:
+      - "5002:5002"
+    depends_on:
+      - db
+    networks:
+      - users-management-net
+    command: python microservices/get_users.py
+
+  app_get_id:
+    build: .
+    ports:
+      - "5003:5003"
+    depends_on:
+      - db
+    networks:
+      - users-management-net
+    command: python microservices/get_user.py
+
+  app_update:
+    build: .
+    ports:
+      - "5008:5008"
+    depends_on:
+      - db
+    networks:
+      - users-management-net
+    command: python microservices/update_user.py
+
+  app_delete:
+    build: .
+    ports:
+      - "5005:5005"
+    depends_on:
+      - db
+    networks:
+      - users-management-net
+    command: python microservices/delete_user.py
+
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: users_management
+    ports:
+      - "5432:5432"
+    networks:
+      - users-management-net
+
+networks:
+  users-management-net:
+    driver: bridge

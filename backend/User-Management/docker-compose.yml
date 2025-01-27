@@ -2,54 +2,74 @@ version: '3.8'
 
 services:
   app_create:
-    build: .
+    build:
+      context: . 
+    image: user-management-app:latest 
+    volumes:
+      - ./create_user:/app  
     ports:
       - "5001:5001"
     depends_on:
       - db
     networks:
       - users-management-net
-    command: python microservices/create_user.py
+    command: app.py }
 
   app_get:
-    build: .
+    build:
+      context: .
+    image: user-management-app:latest
+    volumes:
+      - ./get_users:/app
     ports:
       - "5002:5002"
     depends_on:
       - db
     networks:
       - users-management-net
-    command: python microservices/get_users.py
+    command: app.py
 
   app_get_id:
-    build: .
+    build:
+      context: .
+    image: user-management-app:latest
+    volumes:
+      - ./get_user:/app
     ports:
       - "5003:5003"
     depends_on:
       - db
     networks:
       - users-management-net
-    command: python microservices/get_user.py
+    command: app.py
 
   app_update:
-    build: .
+    build:
+      context: .
+    image: user-management-app:latest
+    volumes:
+      - ./update_user:/app
     ports:
       - "5008:5008"
     depends_on:
       - db
     networks:
       - users-management-net
-    command: python microservices/update_user.py
+    command: app.py
 
   app_delete:
-    build: .
+    build:
+      context: .
+    image: user-management-app:latest
+    volumes:
+      - ./delete_user:/app
     ports:
       - "5005:5005"
     depends_on:
       - db
     networks:
       - users-management-net
-    command: python microservices/delete_user.py
+    command: app.py
 
   db:
     image: postgres:13

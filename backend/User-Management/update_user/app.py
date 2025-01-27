@@ -1,24 +1,11 @@
 from flask import Flask, request, jsonify
-from flask_sqlalchemy import SQLAlchemy
+from models import db, User
+from config import Config
 from datetime import datetime
 
 app = Flask(__name__)
-
-# PostgreSQL database configuration
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:password@db:5432/users_management'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db = SQLAlchemy(app)
-
-# User model with additional characteristics
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    email = db.Column(db.String(100), unique=True, nullable=False)
-    phone = db.Column(db.String(20), nullable=True)
-    password = db.Column(db.String(200), nullable=False)  # Hashed password
-    date_of_birth = db.Column(db.Date, nullable=True)
-    role = db.Column(db.String(50), nullable=False, default='user')
-    is_active = db.Column(db.Boolean, default=True)
+app.config.from_object(Config)
+db.init_app(app)
 
 @app.route('/users/<int:id>', methods=['PUT'])
 def update_user(id):

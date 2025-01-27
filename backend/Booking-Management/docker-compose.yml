@@ -1,0 +1,57 @@
+version: '3.9'
+
+services:
+  app_create:
+    build: .
+    ports:
+      - "5021:5021"
+    depends_on:
+      - db_postgres
+    networks:
+      - booking-management-net
+    command: python microservices/create_booking.py
+
+  app_get:
+    build: .
+    ports:
+      - "5022:5022"
+    depends_on:
+      - db_postgres
+    networks:
+      - booking-management-net
+    command: python microservices/get_booking.py
+
+  app_update:
+    build: .
+    ports:
+      - "5023:5023"
+    depends_on:
+      - db_postgres
+    networks:
+      - booking-management-net
+    command: python microservices/update_booking.py
+
+  app_delete:
+    build: .
+    ports:
+      - "5024:5024"
+    depends_on:
+      - db_postgres
+    networks:
+      - booking-management-net
+    command: python microservices/delete_booking.py
+
+  db_postgres:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: booking_management
+    ports:
+      - "5432:5432"
+    networks:
+      - booking-management-net
+
+networks:
+  booking-management-net:
+    driver: bridge

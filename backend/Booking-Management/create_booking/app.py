@@ -1,21 +1,11 @@
 from flask import Flask, request, jsonify
-from flask_sqlalchemy import SQLAlchemy
+from config import Config
+from models import db_postgres, Booking
 from datetime import datetime
 
 app = Flask(__name__)
-
-# PostgreSQL database configuration
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:password@db_postgres:5432/booking_management'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db_postgres = SQLAlchemy(app)
-
-# Booking model
-class Booking(db_postgres.Model):
-    id = db_postgres.Column(db_postgres.Integer, primary_key=True)
-    user_id = db_postgres.Column(db_postgres.Integer, nullable=False)
-    flight_id = db_postgres.Column(db_postgres.Integer, nullable=False)
-    booking_date = db_postgres.Column(db_postgres.DateTime, nullable=False)
-    status = db_postgres.Column(db_postgres.String(50), nullable=False)
+app.config.from_object(Config)
+db_postgres.init_app(app)
 
 @app.route('/booking', methods=['POST'])
 def create_booking():
@@ -23,14 +13,14 @@ def create_booking():
     user_id = data.get('user_id')
     flight_id = data.get('flight_id')
     booking_date = data.get('booking_date')
-    status = data.get('status', 'pending')  # Default to 'pending' if no status is provided
+    status = data.get('status', 'pending')  # Default to 'pending' if not provided
 
     # Validate required fields
     if not user_id or not flight_id or not booking_date:
         return jsonify({'error': 'User ID, flight ID, and booking date are required'}), 400
 
     try:
-        # Convert booking_date string to datetime object
+        # Parse booking_date string to datetime
         booking_date = datetime.strptime(booking_date, '%Y-%m-%dT%H:%M:%S')
 
         # Create a new booking instance
@@ -49,7 +39,6 @@ def create_booking():
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
-    # Create tables within the application context
     with app.app_context():
         db_postgres.create_all()
         print("Tables created successfully.")

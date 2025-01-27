@@ -2,44 +2,61 @@ version: '3.9'
 
 services:
   app_create:
-    build: .
+    build:
+      context: . 
+    image: booking-management-app:latest 
+    volumes:
+      - ./create_booking:/app  
     ports:
       - "5021:5021"
     depends_on:
       - db_postgres
     networks:
       - booking-management-net
-    command: python microservices/create_booking.py
+    command: app.py }
 
   app_get:
-    build: .
+    build:
+      context: .
+    image: booking-management-app:latest
+    volumes:
+      - ./get_booking:/app
     ports:
       - "5022:5022"
     depends_on:
       - db_postgres
     networks:
       - booking-management-net
-    command: python microservices/get_booking.py
+    command: app.py
+
 
   app_update:
-    build: .
+    build:
+      context: .
+    image: booking-management-app:latest
+    volumes:
+      - ./update_booking:/app
     ports:
       - "5023:5023"
     depends_on:
       - db_postgres
     networks:
       - booking-management-net
-    command: python microservices/update_booking.py
+    command: app.py
 
   app_delete:
-    build: .
+    build:
+      context: .
+    image: booking-management-app:latest
+    volumes:
+      - ./delete_booking:/app
     ports:
       - "5024:5024"
     depends_on:
       - db_postgres
     networks:
       - booking-management-net
-    command: python microservices/delete_booking.py
+    command: app.py
 
   db_postgres:
     image: postgres:13

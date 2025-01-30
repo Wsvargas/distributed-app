@@ -65,7 +65,7 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: booking_management
     ports:
-      - "5432:5432"
+      - "5433:5432"
     networks:
       - booking-management-net
 

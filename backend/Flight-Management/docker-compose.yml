@@ -1,0 +1,89 @@
+version: '3.8'
+
+services:
+  app_create:
+    build:
+      context: .
+    image: flight-management-app:latest
+    volumes:
+      - ./create_flight:/app
+    ports:
+      - "5031:5031"
+    depends_on:
+      - db_postgres
+    networks:
+      - flight-management-net
+    command: app.py  # ✅ Fix here
+
+  app_get_all:
+    build:
+      context: .
+    image: flight-management-app:latest
+    volumes:
+      - ./get_flights:/app
+    ports:
+      - "5032:5032"
+    depends_on:
+      - db_postgres
+    networks:
+      - flight-management-net
+    command: app.py  # ✅ Fix here
+
+  app_get:
+    build:
+      context: .
+    image: flight-management-app:latest
+    volumes:
+      - ./get_flight:/app
+    ports:
+      - "5033:5033"
+    depends_on:
+      - db_postgres
+    networks:
+      - flight-management-net
+    command: app.py  # ✅ Fix here
+
+  app_update:
+    build:
+      context: .
+    image: flight-management-app:latest
+    volumes:
+      - ./update_flight:/app
+    ports:
+      - "5034:5034"
+    depends_on:
+      - db_postgres
+    networks:
+      - flight-management-net
+    command: app.py  # ✅ Fix here
+
+  app_delete:
+    build:
+      context: .
+    image: flight-management-app:latest
+    volumes:
+      - ./delete_flight:/app
+    ports:
+      - "5035:5035"
+    depends_on:
+      - db_postgres
+    networks:
+      - flight-management-net
+    command: app.py  # ✅ Fix here
+
+  db_postgres:
+    image: postgres:13
+    container_name: postgres_flights
+    restart: always
+    environment:
+      POSTGRES_DB: flight_management
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5434:5432"
+    networks:
+      - flight-management-net
+
+networks:
+  flight-management-net:
+    driver: bridge

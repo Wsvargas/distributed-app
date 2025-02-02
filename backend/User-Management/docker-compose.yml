@@ -13,7 +13,7 @@ services:
       - db
     networks:
       - users-management-net
-    command: app.py }
+    command: app.py 
 
   app_get:
     build:
@@ -76,7 +76,7 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
-      POSTGRES_DB: users_management
+      POSTGRES_DB: user-management-db
     ports:
       - "5432:5432"
     networks:

@@ -2,21 +2,24 @@ CREAR USUARIO
 curl -X POST http://localhost:5001/users \
      -H "Content-Type: application/json" \
      -d '{
-           "name": "John Doe",
-           "email": "john.doe@example.com",
+           "name": "Nayeli Cabrera",
+           "email": "nayeli@example.com",
            "phone": "1234567890",
-           "password": "securepassword",
-           "date_of_birth": "1990-01-01",
-           "role": "admin",
+           "password": "test1",
+           "date_of_birth": "2025-01-01",
+           "role": "cliente",
            "is_active": true
          }'
 
 
 OBTENER USUARIO
+
 curl -X GET http://localhost:5003/users/1
 
 
 OBTENER USUARIOS
+
+
 curl -X GET http://localhost:5002/users
 
 

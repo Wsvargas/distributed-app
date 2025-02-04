@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 version: '3.8'
 
 services:
@@ -85,3 +86,92 @@ services:
 networks:
   users-management-net:
     driver: bridge
+=======
+version: '3.8'
+
+services:
+  app_create:
+    build:
+      context: . 
+    image: user-management-app:latest 
+    volumes:
+      - ./create_user:/app  
+    ports:
+      - "5001:5001"
+    depends_on:
+      - db
+    networks:
+      - users-management-net
+    command: app.py }
+
+  app_get:
+    build:
+      context: .
+    image: user-management-app:latest
+    volumes:
+      - ./get_users:/app
+    ports:
+      - "5002:5002"
+    depends_on:
+      - db
+    networks:
+      - users-management-net
+    command: app.py
+
+  app_get_id:
+    build:
+      context: .
+    image: user-management-app:latest
+    volumes:
+      - ./get_user:/app
+    ports:
+      - "5003:5003"
+    depends_on:
+      - db
+    networks:
+      - users-management-net
+    command: app.py
+
+  app_update:
+    build:
+      context: .
+    image: user-management-app:latest
+    volumes:
+      - ./update_user:/app
+    ports:
+      - "5008:5008"
+    depends_on:
+      - db
+    networks:
+      - users-management-net
+    command: app.py
+
+  app_delete:
+    build:
+      context: .
+    image: user-management-app:latest
+    volumes:
+      - ./delete_user:/app
+    ports:
+      - "5005:5005"
+    depends_on:
+      - db
+    networks:
+      - users-management-net
+    command: app.py
+
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: users_management
+    ports:
+      - "5432:5432"
+    networks:
+      - users-management-net
+
+networks:
+  users-management-net:
+    driver: bridge
+>>>>>>> origin/WILLIAN

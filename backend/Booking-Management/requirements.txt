@@ -1,4 +1,11 @@
+<<<<<<< HEAD
+flask
+flask_sqlalchemy
+flask_marshmallow
+marshmallow_sqlalchemy
+=======
 Flask
 Flask-SQLAlchemy
 Werkzeug
+>>>>>>> origin/WILLIAN
 psycopg2-binary

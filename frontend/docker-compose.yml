@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: .
+    image: react-frontend:latest
+    ports:
+      - "3000:3000"
+    networks:
+      - frontend-net
+
+networks:
+  frontend-net:
+    driver: bridge

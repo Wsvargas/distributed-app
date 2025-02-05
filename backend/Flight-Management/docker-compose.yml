@@ -13,7 +13,7 @@ services:
       - db_postgres
     networks:
       - flight-management-net
-    command: app.py  # ✅ Fix here
+    command: app.py 
 
   app_get_all:
     build:
@@ -27,7 +27,7 @@ services:
       - db_postgres
     networks:
       - flight-management-net
-    command: app.py  # ✅ Fix here
+    command: app.py  
 
   app_get:
     build:
@@ -41,7 +41,7 @@ services:
       - db_postgres
     networks:
       - flight-management-net
-    command: app.py  # ✅ Fix here
+    command: app.py 
 
   app_update:
     build:
@@ -55,7 +55,7 @@ services:
       - db_postgres
     networks:
       - flight-management-net
-    command: app.py  # ✅ Fix here
+    command: app.py  
 
   app_delete:
     build:
@@ -69,20 +69,21 @@ services:
       - db_postgres
     networks:
       - flight-management-net
-    command: app.py  # ✅ Fix here
+    command: app.py 
 
   db_postgres:
     image: postgres:13
     container_name: postgres_flights
     restart: always
     environment:
-      POSTGRES_DB: flight_management
+      POSTGRES_DB: flight-management-db
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
+      POSTGRES_PASSWORD: D1str1bu1D4.
     ports:
       - "5434:5432"
     networks:
       - flight-management-net
+      
 
 networks:
   flight-management-net:

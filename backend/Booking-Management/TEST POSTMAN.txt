@@ -2,7 +2,7 @@ CREAR RESERVA:
 curl -X POST http://localhost:5021/booking \
      -H "Content-Type: application/json" \
      -d '{
-           "user_id": 1,
+           "user_id": 100,
            "flight_id": 100,
            "booking_date": "2025-02-01T14:30:00",
            "status": "confirmed"

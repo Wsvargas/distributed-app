@@ -1,0 +1,22 @@
+services:
+  app_get:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: booking-management-app:latest
+    container_name: app_get_booking
+    volumes:
+      - .:/app
+    ports:
+      - "5022:5022"
+    networks:
+      - booking-management-net
+    working_dir: /app
+    env_file:
+      - .env
+    command: ["python", "app.py"]
+    restart: always
+
+networks:
+  booking-management-net:
+    driver: bridge

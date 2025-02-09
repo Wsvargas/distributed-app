@@ -1,0 +1,22 @@
+services:
+  app_get_all:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: flight-management-app:latest
+    container_name: app_get_all_flight
+    volumes:
+      - .:/app
+    ports:
+      - "5032:5032"
+    networks:
+      - flight-management-net
+    working_dir: /app
+    env_file:
+      - .env
+    command: ["python", "app.py"]
+    restart: always
+
+networks:
+  flight-management-net:
+    driver: bridge

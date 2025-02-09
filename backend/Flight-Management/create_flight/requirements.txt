@@ -1,0 +1,6 @@
+Flask
+Flask-SQLAlchemy
+flask_marshmallow
+marshmallow_sqlalchemy
+Werkzeug
+psycopg2-binary

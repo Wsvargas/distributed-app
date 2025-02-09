@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  auth-service:
+    build: .
+    container_name: auth_service
+    ports:
+      - "5003:5003"
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@user-management-db.ctomew44ejiz.us-east-1.rds.amazonaws.com:5432/users_management
+    restart: always

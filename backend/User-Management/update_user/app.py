@@ -2,10 +2,12 @@ from flask import Flask, request, jsonify
 from models import db, User
 from config import Config
 from datetime import datetime
+from flask_cors import CORS
 
 app = Flask(__name__)
 app.config.from_object(Config)
 db.init_app(app)
+CORS(app)
 
 @app.route('/users/<int:id>', methods=['PUT'])
 def update_user(id):

@@ -1,0 +1,96 @@
+version: "3.8"
+
+services:
+  app_create:
+    build:
+      context: ./create_flight
+      dockerfile: Dockerfile
+    image: flight-management-app:latest
+    container_name: app_create_flight
+    volumes:
+      - ./create_flight:/app
+    ports:
+      - "5031:5031"
+    networks:
+      - flight-management-net
+    working_dir: /app
+    environment:
+      - DATABASE_URL=postgresql://postgres:D1str1bu1D4.@flight-management-db.c7u4ume2skf9.us-east-1.rds.amazonaws.com:5432/flight_management
+    command: ["python", "app.py"]
+    restart: always
+
+  app_get_all:
+    build:
+      context: ./get_flights
+      dockerfile: Dockerfile
+    image: flight-management-app:latest
+    container_name: app_get_all_flight
+    volumes:
+      - ./get_flights:/app
+    ports:
+      - "5032:5032"
+    networks:
+      - flight-management-net
+    working_dir: /app
+    environment:
+      - DATABASE_URL=postgresql://postgres:D1str1bu1D4.@flight-management-db.c7u4ume2skf9.us-east-1.rds.amazonaws.com:5432/flight_management
+    command: ["python", "app.py"]
+    restart: always
+
+  app_get:
+    build:
+      context: ./get_flight
+      dockerfile: Dockerfile
+    image: flight-management-app:latest
+    container_name: app_get_flight
+    volumes:
+      - ./get_flight:/app
+    ports:
+      - "5033:5033"
+    networks:
+      - flight-management-net
+    working_dir: /app
+    environment:
+      - DATABASE_URL=postgresql://postgres:D1str1bu1D4.@flight-management-db.c7u4ume2skf9.us-east-1.rds.amazonaws.com:5432/flight_management
+    command: ["python", "app.py"]
+    restart: always
+  
+  app_update:
+    build:
+      context: ./update_flight
+      dockerfile: Dockerfile
+    image: flight-management-app:latest
+    container_name: app_update_flight
+    volumes:
+      - ./update_flight:/app
+    ports:
+      - "5034:5034"
+    networks:
+      - flight-management-net
+    working_dir: /app
+    environment:
+      - DATABASE_URL=postgresql://postgres:D1str1bu1D4.@flight-management-db.c7u4ume2skf9.us-east-1.rds.amazonaws.com:5432/flight_management
+    command: ["python", "app.py"]
+    restart: always
+
+  app_delete:
+    build:
+      context: ./delete_flight
+      dockerfile: Dockerfile
+    image: flight-management-app:latest
+    container_name: app_delete_flight
+    volumes:
+      - ./delete_flight:/app
+    ports:
+      - "5035:5035"
+    networks:
+      - flight-management-net
+    working_dir: /app
+    environment:
+      - DATABASE_URL=postgresql://postgres:D1str1bu1D4.@flight-management-db.c7u4ume2skf9.us-east-1.rds.amazonaws.com:5432/flight_management
+    command: ["python", "app.py"]
+    restart: always
+
+networks:
+  flight-management-net:
+    driver: bridge

@@ -1,6 +1,6 @@
 Flask
 Flask-SQLAlchemy
-flask_marshmallow
+flask_cors
 marshmallow_sqlalchemy
 Werkzeug
 psycopg2-binary

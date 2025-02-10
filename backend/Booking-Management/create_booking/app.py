@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 from config import Config
 from models import db_postgres, Booking
 from datetime import datetime
@@ -6,6 +7,7 @@ from datetime import datetime
 app = Flask(__name__)
 app.config.from_object(Config)
 db_postgres.init_app(app)
+CORS(app)
 
 @app.route('/booking', methods=['POST'])
 def create_booking():

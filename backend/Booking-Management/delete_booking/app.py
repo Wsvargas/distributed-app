@@ -1,10 +1,12 @@
 from flask import Flask, jsonify
+from flask_cors import CORS
 from models import db_postgres, Booking
 from config import Config
 
 app = Flask(__name__)
 app.config.from_object(Config)
 db_postgres.init_app(app)
+CORS(app)
 
 @app.route('/booking/<int:id>', methods=['DELETE'])
 def delete_booking(id):
@@ -21,7 +23,6 @@ def delete_booking(id):
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
-    # Create tables within the application context
     with app.app_context():
         db_postgres.create_all()
         print("Tables created successfully.")

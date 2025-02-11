@@ -60,15 +60,15 @@ jobs:
           git reset --hard origin/WILLIAN  # 🔥 BLOQUEA CUALQUIER MERGE DE QA
           git pull origin WILLIAN --rebase
 
-      - name: Create Pull Request from WILLIAN to QA (Without Merging QA)
+      - name: Create Pull Request from WILLIAN to QA (Using a Temporary Branch)
         uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.GH_PAT }}
           base: QA  # ✅ QA solo recibirá cambios de WILLIAN
-          branch: WILLIAN  # ✅ WILLIAN NO SE MEZCLA CON QA
+          branch: temp-willian-qa  # 🔥 Usar una rama temporal para evitar modificar WILLIAN
           title: "🚀 Merge WILLIAN into QA - Awaiting Approval"
           body: "Este Pull Request necesita aprobación antes de fusionarse en QA."
           reviewers: "AlexandraN2001"
           labels: "QA Review"
           draft: false
-          delete-branch: false  # 🔥 EVITA QUE GITHUB TOQUE WILLIAN
+          delete-branch: true  # 🔥 Se borra la rama temporal después del merge

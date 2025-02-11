@@ -50,5 +50,11 @@ jobs:
           base: QA
           title: "🚀 Merge WILLIAN into QA - Awaiting Approval"
           body: "Este Pull Request requiere aprobación antes de fusionar los cambios en QA."
-          reviewers: "AlexandraN2001"  # Reemplaza con el usuario de GitHub del revisor
+          reviewers: "AlexandraN2001"
           labels: "QA Review"
+
+      - name: Notify Reviewer in PR
+        run: |
+          gh pr comment --repo ${{ github.repository }} --body "@AlexandraN2001 Por favor revisa y aprueba este PR antes de fusionarlo en QA."
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

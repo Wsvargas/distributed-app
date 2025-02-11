@@ -49,6 +49,14 @@ jobs:
           git config --global user.email "github-actions@github.com"
           git config --global user.name "GitHub Actions"
 
+      - name: Verify No Unintended Changes from QA
+        run: |
+          git fetch origin QA
+          if git diff --quiet origin/QA WILLIAN; then
+            echo "🚨 No hay cambios en WILLIAN respecto a QA. PR NO CREADO."
+            exit 1
+          fi
+
       - name: Create Pull Request from WILLIAN to QA
         uses: peter-evans/create-pull-request@v5
         with:

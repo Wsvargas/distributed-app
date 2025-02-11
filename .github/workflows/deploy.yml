@@ -22,6 +22,9 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
 
+      - name: Fix Permissions in EC2 (One-Time Setup)
+        run: ssh ubuntu@${{ secrets.EC2_HOST }} "sudo chown -R ubuntu:ubuntu /root/distributed-app && sudo chmod -R 755 /root/distributed-app"
+
       - name: Pull latest changes from WILLIAN
         run: ssh ubuntu@${{ secrets.EC2_HOST }} "cd /root/distributed-app/backend/User-Management && git pull origin WILLIAN"
 

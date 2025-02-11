@@ -1,98 +1,78 @@
 version: "3.8"
 
 services:
-
   app_create:
-      build:
-        context: .
-        dockerfile: Dockerfile
-      image: booking-management-app:latest
-      container_name: app_create_booking
-      volumes:
-        - ./create_booking:/app
-      ports:
-        - "5021:5021"
-      networks:
-        - booking-management-net
-      working_dir: /app
-      environment:
-        - DATABASE_URL=postgresql://postgres:D1str1bu1D4.@flight-management-db.c7u4ume2skf9.us-east-1.rds.amazonaws.com:5432/flight_management
-      command: ["python", "app.py"]
-      restart: always
-
-
-  app_get_all:
     build:
-      context: ./get_flights
+      context: ./create_booking
       dockerfile: Dockerfile
-    image: flight-management-app:latest
-    container_name: app_get_all_flight
+    image: booking-management-app:latest
+    container_name: app_create_booking
     volumes:
-      - ./get_flights:/app
+      - ./create_booking:/app
     ports:
-      - "5032:5032"
+      - "5021:5021"
     networks:
-      - flight-management-net
+      - booking-management-net
     working_dir: /app
     environment:
-      - DATABASE_URL=postgresql://postgres:D1str1bu1D4.@flight-management-db.c7u4ume2skf9.us-east-1.rds.amazonaws.com:5432/flight_management
+      - DATABASE_URL=postgresql://postgres:D1str1bu1D4.@booking-management-db.c7u4ume2skf9.us-east-1.rds.amazonaws.com:5432/booking_management
     command: ["python", "app.py"]
     restart: always
 
   app_get:
     build:
-      context: ./get_flight
+      context: ./get_booking
       dockerfile: Dockerfile
-    image: flight-management-app:latest
-    container_name: app_get_flight
+    image: booking-management-app:latest
+    container_name: app_get_booking
     volumes:
-      - ./get_flight:/app
+      - ./get_booking:/app
     ports:
-      - "5033:5033"
+      - "5022:5022"
     networks:
-      - flight-management-net
+      - booking-management-net
     working_dir: /app
     environment:
-      - DATABASE_URL=postgresql://postgres:D1str1bu1D4.@flight-management-db.c7u4ume2skf9.us-east-1.rds.amazonaws.com:5432/flight_management
+      - DATABASE_URL=postgresql://postgres:D1str1bu1D4.@booking-management-db.c7u4ume2skf9.us-east-1.rds.amazonaws.com:5432/booking_management
     command: ["python", "app.py"]
     restart: always
   
   app_update:
     build:
-      context: ./update_flight
+      context: ./update_booking
       dockerfile: Dockerfile
-    image: flight-management-app:latest
-    container_name: app_update_flight
+    image: booking-management-app:latest
+    container_name: app_update_booking
     volumes:
-      - ./update_flight:/app
+      - ./update_booking:/app
     ports:
-      - "5034:5034"
+      - "5023:5023"
     networks:
-      - flight-management-net
+      - booking-management-net
     working_dir: /app
     environment:
-      - DATABASE_URL=postgresql://postgres:D1str1bu1D4.@flight-management-db.c7u4ume2skf9.us-east-1.rds.amazonaws.com:5432/flight_management
+      - DATABASE_URL=postgresql://postgres:D1str1bu1D4.@booking-management-db.c7u4ume2skf9.us-east-1.rds.amazonaws.com:5432/booking_management
     command: ["python", "app.py"]
     restart: always
 
   app_delete:
     build:
-      context: ./delete_flight
+      context: ./delete_booking
       dockerfile: Dockerfile
-    image: flight-management-app:latest
-    container_name: app_delete_flight
+    image: booking-management-app:latest
+    container_name: app_delete_booking
     volumes:
-      - ./delete_flight:/app
+      - ./delete_booking:/app
     ports:
-      - "5035:5035"
+      - "5024:5024"
     networks:
-      - flight-management-net
+      - booking-management-net
     working_dir: /app
     environment:
-      - DATABASE_URL=postgresql://postgres:D1str1bu1D4.@flight-management-db.c7u4ume2skf9.us-east-1.rds.amazonaws.com:5432/flight_management
+      - DATABASE_URL=postgresql://postgres:D1str1bu1D4.@booking-management-db.c7u4ume2skf9.us-east-1.rds.amazonaws.com:5432/booking_management
     command: ["python", "app.py"]
     restart: always
 
 networks:
-  flight-management-net:
+  booking-management-net:
     driver: bridge

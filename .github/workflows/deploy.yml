@@ -1,0 +1,51 @@
+name: Deploy User Management
+
+on:
+  push:
+    branches:
+      - WILLIAN
+  workflow_dispatch:
+
+jobs:
+  deploy-to-willian:
+    name: Deploy to EC2 (WILLIAN)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Pull latest changes from WILLIAN
+        run: ssh ubuntu@${{ secrets.EC2_HOST }} "cd /root/distributed-app/backend/User-Management && git pull origin WILLIAN"
+
+      - name: Restart Docker containers
+        run: ssh ubuntu@${{ secrets.EC2_HOST }} "cd /root/distributed-app/backend/User-Management && docker-compose up --build -d"
+
+  create-pull-request:
+    name: Create PR from WILLIAN to QA
+    needs: deploy-to-willian
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Create Pull Request from WILLIAN to QA
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GH_PAT }}
+          base: QA
+          branch: WILLIAN
+          title: "🚀 Merge WILLIAN into QA - Awaiting Approval"
+          body: "Este Pull Request necesita aprobación antes de fusionarse en QA."
+          reviewers: "AlexandraN2001"
+          labels: "QA Review"

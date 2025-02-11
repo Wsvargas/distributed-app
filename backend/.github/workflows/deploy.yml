@@ -1,0 +1,63 @@
+name: Deploy User Management
+
+on:
+  push:
+    branches:
+      - WILLIAN
+  workflow_dispatch:
+
+jobs:
+  deploy-to-willian:
+    name: Deploy to EC2 (WILLIAN)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Pull latest changes from WILLIAN
+        run: ssh ubuntu@${{ secrets.EC2_HOST }} "cd /home/ubuntu/distributed-app/backend/User-Management && git pull origin WILLIAN"
+
+      - name: Restart Docker containers
+        run: ssh ubuntu@${{ secrets.EC2_HOST }} "cd /home/ubuntu/distributed-app/backend/User-Management && docker-compose up --build -d"
+
+  approve-merge-to-qa:
+    name: Approval for QA
+    needs: deploy-to-willian
+    runs-on: ubuntu-latest
+    steps:
+      - name: Manual Approval Required
+        run: echo "Wait for manual approval to deploy to QA."
+      
+      - name: Pause for approval
+        uses: hmarr/auto-approve-action@v3
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+  deploy-to-qa:
+    name: Deploy to QA
+    needs: approve-merge-to-qa
+    runs-on: ubuntu-latest
+    if: success()
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Merge WILLIAN into QA
+        run: |
+          git config --global user.email "github-actions@github.com"
+          git config --global user.name "GitHub Actions"
+          git checkout QA
+          git merge WILLIAN --no-ff -m "Merge approved changes from WILLIAN to QA"
+          git push origin QA
+
+      - name: Deploy QA to EC2
+        run: ssh ubuntu@${{ secrets.EC2_HOST }} "cd /home/ubuntu/distributed-app/backend/User-Management && git pull origin QA && docker-compose up --build -d"

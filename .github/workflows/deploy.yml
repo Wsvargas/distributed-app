@@ -53,6 +53,14 @@ jobs:
           git checkout -b temp-willian-qa origin/WILLIAN
           git push origin temp-willian-qa
 
+      - name: Check if There Are Changes
+        run: |
+          CHANGES=$(git rev-list --count QA..temp-willian-qa)
+          if [[ "$CHANGES" -eq 0 ]]; then
+            echo "🚀 No hay cambios nuevos entre WILLIAN y QA. No se creará un PR."
+            exit 0  # 🔥 Detiene el workflow sin error
+          fi
+
       - name: Close Existing PR (If Any)
         run: |
           EXISTING_PR=$(gh pr list --base QA --head temp-willian-qa --json number --jq '.[0].number')

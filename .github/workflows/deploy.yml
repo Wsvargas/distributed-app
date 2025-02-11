@@ -28,32 +28,30 @@ jobs:
       - name: Restart Docker containers
         run: ssh ubuntu@${{ secrets.EC2_HOST }} "sudo bash -c 'cd /root/distributed-app/backend/User-Management && docker-compose up --build -d'"
 
-  approve-merge-to-qa:
+  approval-for-qa:
     name: Await Manual Approval
     needs: deploy-to-willian
     runs-on: ubuntu-latest
 
     steps:
-      - name: Await approval before deploying to QA
+      - name: Await approval before merging to QA
         run: echo "✅ Waiting for manual approval in GitHub Actions UI."
 
-  deploy-to-qa:
-    name: Deploy to QA
-    needs: approve-merge-to-qa
+  merge-to-qa:
+    name: Merge to QA (if approved)
+    needs: approval-for-qa
     runs-on: ubuntu-latest
     if: success()
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Clona todas las ramas para evitar errores de checkout
 
-      - name: Merge WILLIAN into QA
+      - name: Merge WILLIAN into QA (Approved)
         run: |
-          git config --global user.email "github-actions@github.com"
-          git config --global user.name "GitHub Actions"
+          git fetch origin
           git checkout QA
           git merge WILLIAN --no-ff -m "Merge approved changes from WILLIAN to QA"
           git push origin QA
-
-      - name: Deploy QA to EC2
-        run: ssh ubuntu@${{ secrets.EC2_HOST }} "sudo bash -c 'cd /root/distributed-app/backend/User-Management && git pull origin QA && docker-compose up --build -d'"

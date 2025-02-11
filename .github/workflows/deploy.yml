@@ -28,49 +28,27 @@ jobs:
       - name: Restart Docker containers
         run: ssh ubuntu@${{ secrets.EC2_HOST }} "sudo bash -c 'cd /root/distributed-app/backend/User-Management && docker-compose up --build -d'"
 
-  approval-for-qa:
-    name: Await Manual Approval
+  create-pull-request:
+    name: Create PR for QA Approval
     needs: deploy-to-willian
     runs-on: ubuntu-latest
 
     steps:
-      - name: Await approval before merging to QA
-        run: echo "✅ Waiting for manual approval in GitHub Actions UI."
-        
-      - name: Pause for Manual Approval
-        uses: hmarr/auto-approve-action@v3
-        with:
-          github-token: ${{ secrets.EC2_TOKEN_GIT }}
-
-  merge-to-qa:
-    name: Merge WILLIAN into QA (if approved)
-    needs: approval-for-qa
-    runs-on: ubuntu-latest
-    if: success()
-
-    steps:
-      - name: Checkout repository (Only WILLIAN)
+      - name: Checkout repository
         uses: actions/checkout@v3
-        with:
-          ref: WILLIAN  # ✅ Solo clona la rama WILLIAN
-          fetch-depth: 1  # ✅ Solo trae el último commit (más eficiente)
 
-      - name: Set Git User Identity  # ✅ Soluciona el error de identidad
+      - name: Set Git User Identity
         run: |
           git config --global user.email "github-actions@github.com"
           git config --global user.name "GitHub Actions"
 
-      - name: Fetch QA branch  # ✅ Obtiene SOLO la rama QA, sin clonar todo el repo
-        run: |
-          git fetch origin QA || echo "Branch QA not found"
-          if ! git rev-parse --verify QA >/dev/null 2>&1; then
-            git checkout -b QA
-            git push origin QA
-          else
-            git checkout QA
-          fi
-
-      - name: Merge WILLIAN into QA (Approved)
-        run: |
-          git merge WILLIAN --no-ff -m "Merge approved changes from WILLIAN to QA"
-          git push origin QA
+      - name: Create Pull Request from WILLIAN to QA
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: WILLIAN
+          base: QA
+          title: "🚀 Merge WILLIAN into QA - Awaiting Approval"
+          body: "Este Pull Request requiere aprobación antes de fusionar los cambios en QA."
+          reviewers: "AlexandraN2001"  # Reemplaza con el usuario de GitHub del revisor
+          labels: "QA Review"

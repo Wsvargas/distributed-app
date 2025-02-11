@@ -43,9 +43,10 @@ jobs:
           git config --global user.name "GitHub Actions"
 
       - name: Create Pull Request from WILLIAN to QA
+        id: create_pr  # ✅ Guardamos el PR ID
         uses: peter-evans/create-pull-request@v5
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GH_PAT }}  # 🔥 Usamos GH_PAT con permisos de escritura
           branch: WILLIAN
           base: QA
           title: "🚀 Merge WILLIAN into QA - Awaiting Approval"
@@ -53,8 +54,13 @@ jobs:
           reviewers: "AlexandraN2001"
           labels: "QA Review"
 
-      - name: Notify Reviewer in PR
-        run: |
-          gh pr comment --repo ${{ github.repository }} --body "@AlexandraN2001 Por favor revisa y aprueba este PR antes de fusionarlo en QA."
+      - name: Get PR Number  # ✅ Obtener el número del PR
+        run: echo "PR_NUMBER=$(gh pr list --state open --head WILLIAN --json number --jq '.[0].number')" >> $GITHUB_ENV
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+
+      - name: Notify Reviewer in PR  # ✅ Usar el número de PR en el comentario
+        run: |
+          gh pr comment $PR_NUMBER --body "@AlexandraN2001 Por favor revisa y aprueba este PR antes de fusionarlo en QA."
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}

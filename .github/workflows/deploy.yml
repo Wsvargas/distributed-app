@@ -12,16 +12,30 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Check if PR already exists
+      - name: Check for existing PR
         id: check_pr
-        uses: octokit/request-action@v2.x
+        uses: actions/github-script@v6
         with:
-          route: GET /repos/{owner}/{repo}/pulls
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { owner, repo } = context.repo;
+            const { data: pulls } = await github.rest.pulls.list({
+              owner,
+              repo,
+              state: "open",
+              head: "WILLIAN",
+              base: "QA"
+            });
+
+            if (pulls.length > 0) {
+              core.setOutput("pr_exists", "true");
+              core.setOutput("pr_number", pulls[0].number);
+            } else {
+              core.setOutput("pr_exists", "false");
+            }
 
       - name: Create Pull Request if none exists
-        if: ${{ !contains(steps.check_pr.outputs.data, 'WILLIAN') }}
+        if: steps.check_pr.outputs.pr_exists == 'false'
         uses: peter-evans/create-pull-request@v5
         with:
           branch: WILLIAN
@@ -32,21 +46,18 @@ jobs:
           draft: false
           reviewers: "JuanGuevara90"  # Cambia por el usuario encargado de aprobar
 
-      - name: Add Comment if PR exists
-        if: ${{ contains(steps.check_pr.outputs.data, 'WILLIAN') }}
+      - name: Add comment if PR already exists
+        if: steps.check_pr.outputs.pr_exists == 'true'
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const { owner, repo } = context.repo;
-            const pulls = await github.rest.pulls.list({ owner, repo });
-            const existingPR = pulls.data.find(pr => pr.head.ref === "WILLIAN" && pr.base.ref === "QA");
-
-            if (existingPR) {
-              await github.rest.issues.createComment({
-                owner,
-                repo,
-                issue_number: existingPR.number,
-                body: "⚠️ Ya hay un PR en progreso de `WILLIAN` a `QA`. Este cambio será procesado cuando se apruebe el actual."
-              });
-            }
+            const prNumber = ${{ steps.check_pr.outputs.pr_number }};
+            
+            await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number: prNumber,
+              body: "⚠️ Ya hay un PR en progreso de `WILLIAN` a `QA`. Este cambio será procesado cuando se apruebe el actual."
+            });

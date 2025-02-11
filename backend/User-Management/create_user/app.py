@@ -17,7 +17,7 @@ def create_user():
     password = data.get('password')
     date_of_birth = data.get('date_of_birth')
     role = data.get('role', 'user')  # Default to 'user' if no role is provided test2  test3 test4 test5
-    is_active = data.get('is_active', True)  # Default to True if no value provided
+    is_active = data.get('is_active', True)  # Default to True if no value provided  new test 7
 
     if not name or not email or not password:
         return jsonify({'error': 'Name, email, and password are required'}), 400

@@ -36,22 +36,41 @@ jobs:
     steps:
       - name: Await approval before merging to QA
         run: echo "✅ Waiting for manual approval in GitHub Actions UI."
+        
+      - name: Pause for Manual Approval
+        uses: hmarr/auto-approve-action@v3
+        with:
+          github-token: ${{ secrets.EC2_TOKEN_GIT }}
 
   merge-to-qa:
-    name: Merge to QA (if approved)
+    name: Merge WILLIAN into QA (if approved)
     needs: approval-for-qa
     runs-on: ubuntu-latest
     if: success()
 
     steps:
-      - name: Checkout repository
+      - name: Checkout repository (Only WILLIAN)
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0  # Clona todas las ramas para evitar errores de checkout
+          ref: WILLIAN  # ✅ Solo clona la rama WILLIAN
+          fetch-depth: 1  # ✅ Solo trae el último commit (más eficiente)
+
+      - name: Set Git User Identity  # ✅ Soluciona el error de identidad
+        run: |
+          git config --global user.email "github-actions@github.com"
+          git config --global user.name "GitHub Actions"
+
+      - name: Fetch QA branch  # ✅ Obtiene SOLO la rama QA, sin clonar todo el repo
+        run: |
+          git fetch origin QA || echo "Branch QA not found"
+          if ! git rev-parse --verify QA >/dev/null 2>&1; then
+            git checkout -b QA
+            git push origin QA
+          else
+            git checkout QA
+          fi
 
       - name: Merge WILLIAN into QA (Approved)
         run: |
-          git fetch origin
-          git checkout QA
           git merge WILLIAN --no-ff -m "Merge approved changes from WILLIAN to QA"
           git push origin QA

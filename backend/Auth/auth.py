@@ -12,19 +12,22 @@ db = SQLAlchemy(app)
 @app.route('/login', methods=['POST'])
 def login():
     data = request.json
-    print(f"Datos recibidos: {data}")  # Esto te ayudará a depurar
     email = data.get('email')
     password = data.get('password')
 
     if not email or not password:
         return jsonify({"message": "Email y contraseña son requeridos"}), 400
 
-    query = text('SELECT * FROM "user" WHERE email = :email AND password = :password')
+    query = text('SELECT id, role FROM "user" WHERE email = :email AND password = :password')
     result = db.session.execute(query, {"email": email, "password": password}).fetchone()
 
     if result:
-        return jsonify({"message": "Login exitoso", "user": dict(result._mapping)}), 200
-
+        user_data = dict(result._mapping)
+        return jsonify({
+            "message": "Login exitoso",
+            "user_id": user_data["id"],
+            "role": user_data["role"]
+        }), 200
     else:
         return jsonify({"message": "Usuario o contraseña incorrectos"}), 401
 

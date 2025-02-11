@@ -23,22 +23,24 @@ jobs:
           ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
 
       - name: Pull latest changes from WILLIAN
-        run: ssh ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
+        run: |
+          ssh ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
           echo "🚀 Actualizando código desde GitHub..."
           cd /root/distributed-app/backend/User-Management
           git fetch origin
           git reset --hard origin/WILLIAN
           git pull origin WILLIAN
           echo "✅ Código actualizado correctamente."
-        EOF
+          EOF
 
       - name: Build and Restart Docker Containers Without Removing Them
-        run: ssh ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
+        run: |
+          ssh ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
           echo "🚀 Reconstruyendo contenedores sin eliminarlos..."
           cd /root/distributed-app/backend/User-Management
           docker-compose up --build -d
           echo "✅ Contenedores actualizados correctamente."
-        EOF
+          EOF
 
   create-pull-request:
     name: Create PR from WILLIAN to QA

@@ -26,4 +26,3 @@ jobs:
           body: "Este Pull Request fue generado automáticamente y está pendiente de revisión."
           labels: "Pending Review"
           draft: false  # 🔥 PR normal (NO borrador)
-            reviewers: "willian"  # 🔥 Usuario que revisará el PR

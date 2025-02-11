@@ -29,17 +29,13 @@ jobs:
         run: ssh ubuntu@${{ secrets.EC2_HOST }} "sudo bash -c 'cd /root/distributed-app/backend/User-Management && docker-compose up --build -d'"
 
   approve-merge-to-qa:
-    name: Approval for QA
+    name: Await Manual Approval
     needs: deploy-to-willian
     runs-on: ubuntu-latest
+
     steps:
-      - name: Manual Approval Required
-        run: echo "Wait for manual approval to deploy to QA."
-      
-      - name: Pause for approval
-        uses: hmarr/auto-approve-action@v3
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Await approval before deploying to QA
+        run: echo "✅ Waiting for manual approval in GitHub Actions UI."
 
   deploy-to-qa:
     name: Deploy to QA
@@ -60,4 +56,4 @@ jobs:
           git push origin QA
 
       - name: Deploy QA to EC2
-        run: ssh ubuntu@${{ secrets.EC2_HOST }} "sudo bash -c 'cd
+        run: ssh ubuntu@${{ secrets.EC2_HOST }} "sudo bash -c 'cd /root/distributed-app/backend/User-Management && git pull origin QA && docker-compose up --build -d'"

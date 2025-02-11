@@ -16,10 +16,13 @@ jobs:
         with:
           fetch-depth: 0  # Asegura que tenemos todo el historial
 
-      - name: Create Pull Request Manually
+      - name: Create Temporary Branch for PR
         run: |
           git checkout -b temp-willian-qa origin/WILLIAN  # 🔥 Crea una copia de WILLIAN para PR
           git push origin temp-willian-qa  # 🔥 Sube la rama temporal para el PR
+
+      - name: Create Pull Request Manually
+        run: |
           gh pr create --base QA --head temp-willian-qa --title "🚀 PR: Merge WILLIAN into QA" --body "Este PR requiere revisión y aprobación manual."
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}  # 🔥 Se usa el Personal Access Token (PAT)

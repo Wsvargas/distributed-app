@@ -23,12 +23,10 @@ jobs:
           ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
 
       - name: Pull latest changes from WILLIAN
-        run: ssh ubuntu@${{ secrets.EC2_HOST }} "cd /root/distributed-app/backend/User-Management && git pull origin WILLIAN"
-
+        run: ssh ubuntu@${{ secrets.EC2_HOST }} "sudo bash -c 'cd /root/distributed-app/backend/User-Management && git pull origin WILLIAN'"
 
       - name: Restart Docker containers
-        run: ssh ubuntu@${{ secrets.EC2_HOST }} "cd /root/distributed-app/backend/User-Management && docker-compose up --build -d"
-
+        run: ssh ubuntu@${{ secrets.EC2_HOST }} "sudo bash -c 'cd /root/distributed-app/backend/User-Management && docker-compose up --build -d'"
 
   approve-merge-to-qa:
     name: Approval for QA
@@ -62,4 +60,4 @@ jobs:
           git push origin QA
 
       - name: Deploy QA to EC2
-        run: ssh ubuntu@${{ secrets.EC2_HOST }} "cd /home/ubuntu/distributed-app/backend/User-Management && git pull origin QA && docker-compose up --build -d"
+        run: ssh ubuntu@${{ secrets.EC2_HOST }} "sudo bash -c 'cd

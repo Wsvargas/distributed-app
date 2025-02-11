@@ -28,9 +28,10 @@ jobs:
           echo "🚀 Actualizando código desde GitHub..."
           cd /root/distributed-app/backend/User-Management
           git fetch origin
-          git reset --hard origin/WILLIAN
+          git checkout WILLIAN  # 🔥 ASEGURA QUE SIEMPRE ESTÁ EN WILLIAN
+          git reset --hard origin/WILLIAN  # 🔥 BLOQUEA CUALQUIER MEZCLA DE QA
           git pull origin WILLIAN
-          echo "✅ Código actualizado correctamente."
+          echo "✅ Código actualizado correctamente en EC2."
           EOF
 
       - name: Build and Restart Docker Containers Without Removing Them
@@ -56,17 +57,18 @@ jobs:
       - name: Ensure We Are on WILLIAN and Do Not Merge QA
         run: |
           git checkout WILLIAN
-          git reset --hard origin/WILLIAN
+          git reset --hard origin/WILLIAN  # 🔥 BLOQUEA CUALQUIER MERGE DE QA
           git pull origin WILLIAN --rebase
 
       - name: Create Pull Request from WILLIAN to QA (Without Merging QA)
         uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.GH_PAT }}
-          base: QA
-          branch: WILLIAN
+          base: QA  # ✅ QA solo recibirá cambios de WILLIAN
+          branch: WILLIAN  # ✅ WILLIAN NO SE MEZCLA CON QA
           title: "🚀 Merge WILLIAN into QA - Awaiting Approval"
           body: "Este Pull Request necesita aprobación antes de fusionarse en QA."
           reviewers: "AlexandraN2001"
           labels: "QA Review"
           draft: false
+          delete-branch: false  # 🔥 EVITA QUE GITHUB TOQUE WILLIAN

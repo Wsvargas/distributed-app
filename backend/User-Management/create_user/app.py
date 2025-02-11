@@ -16,7 +16,7 @@ def create_user():
     phone = data.get('phone')
     password = data.get('password')
     date_of_birth = data.get('date_of_birth')
-    role = data.get('role', 'user')  # Default to 'usssser' if no role test 12is provided test2  test3 test4 test5
+    role = data.get('role', 'user')  # Default to 'usssser' if nddso role test 12is provided test2  test3 test4 test5
     is_active = data.get('is_active', True)  # Default to True if no value provided  new test 7
 
     if not name or not email or not password:

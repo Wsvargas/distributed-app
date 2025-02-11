@@ -14,15 +14,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0
+          fetch-depth: 0  # Asegura que tenemos todo el historial
 
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v5
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          base: QA  # 🔥 QA será la rama destino
-          branch: WILLIAN  # 🔥 WILLIAN es la rama de origen
-          title: "🚀 Auto PR: Merge WILLIAN into QA - Pending Review"
-          body: "Este Pull Request fue generado automáticamente y está pendiente de revisión."
-          labels: "Pending Review"
-          draft: false  # 🔥 PR normal (NO borrador)
+      - name: Create Pull Request Manually
+        run: |
+          git checkout -b temp-willian-qa origin/WILLIAN  # 🔥 Crea una copia de WILLIAN para PR
+          git push origin temp-willian-qa  # 🔥 Sube la rama temporal para el PR
+          gh pr create --base QA --head temp-willian-qa --title "🚀 PR: Merge WILLIAN into QA" --body "Este PR requiere revisión y aprobación manual."
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

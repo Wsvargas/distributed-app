@@ -23,32 +23,48 @@ jobs:
           ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
 
       - name: Pull latest changes from WILLIAN
-        run: ssh ubuntu@${{ secrets.EC2_HOST }} "sudo bash -c 'cd /root/distributed-app/backend/User-Management && git pull origin WILLIAN'"
+        run: ssh ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
+          echo "🚀 Actualizando código desde GitHub..."
+          cd /root/distributed-app/backend/User-Management
+          git fetch origin
+          git reset --hard origin/WILLIAN
+          git pull origin WILLIAN
+          echo "✅ Código actualizado correctamente."
+        EOF
 
-      - name: Restart Docker containers
-        run: ssh ubuntu@${{ secrets.EC2_HOST }} "sudo bash -c 'cd /root/distributed-app/backend/User-Management && docker-compose up --build -d'"
+      - name: Build and Restart Docker Containers Without Removing Them
+        run: ssh ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
+          echo "🚀 Reconstruyendo contenedores sin eliminarlos..."
+          cd /root/distributed-app/backend/User-Management
+          docker-compose up --build -d
+          echo "✅ Contenedores actualizados correctamente."
+        EOF
 
   create-pull-request:
-    name: Create PR for QA Approval
+    name: Create PR from WILLIAN to QA
     needs: deploy-to-willian
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout repository (Fetch all branches)
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
-      - name: Set Git User Identity
+      - name: Ensure We Are on WILLIAN and Do Not Merge QA
         run: |
-          git config --global user.email "github-actions@github.com"
-          git config --global user.name "GitHub Actions"
+          git checkout WILLIAN
+          git reset --hard origin/WILLIAN
+          git pull origin WILLIAN --rebase
 
-      - name: Create Pull Request from WILLIAN to QA
+      - name: Create Pull Request from WILLIAN to QA (Without Merging QA)
         uses: peter-evans/create-pull-request@v5
         with:
-          token: ${{ secrets.GH_PAT }}  # 🔥 Se usa GH_PAT con permisos de escritura
-          branch: WILLIAN
+          token: ${{ secrets.GH_PAT }}
           base: QA
-          title: "🚀 Merge WILLIAN into QA - Approval Required"
+          branch: WILLIAN
+          title: "🚀 Merge WILLIAN into QA - Awaiting Approval"
           body: "Este Pull Request necesita aprobación antes de fusionarse en QA."
           reviewers: "AlexandraN2001"
           labels: "QA Review"
+          draft: false

@@ -53,6 +53,16 @@ jobs:
           git checkout -b temp-willian-qa origin/WILLIAN
           git push origin temp-willian-qa
 
+      - name: Close Existing PR (If Any)
+        run: |
+          EXISTING_PR=$(gh pr list --base QA --head temp-willian-qa --json number --jq '.[0].number')
+          if [[ -n "$EXISTING_PR" ]]; then
+            echo "🚀 Cerrando PR existente: #$EXISTING_PR"
+            gh pr close "$EXISTING_PR" --delete-branch
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+
       - name: Create Pull Request Manually
         run: |
           gh pr create --base QA --head temp-willian-qa --title "🚀 PR: Merge WILLIAN into QA" --body "Este PR requiere revisión y aprobación manual."

@@ -48,10 +48,30 @@ jobs:
         with:
           fetch-depth: 0  # Asegura que tenemos todo el historial
 
+      - name: Fetch All Branches
+        run: |
+          git fetch --all  # 🔥 Descarga todas las referencias remotas
+          git branch -r    # 🔥 Lista las ramas remotas para verificar
+
+      - name: Ensure QA Branch Exists
+        run: |
+          if ! git show-ref --quiet refs/remotes/origin/QA; then
+            echo "❌ Error: La rama QA no existe en el repositorio remoto."
+            exit 1
+          fi
+
       - name: Create Temporary Branch for PR
         run: |
           git checkout -b temp-willian-qa origin/WILLIAN
           git push origin temp-willian-qa
+
+      - name: Check if There Are Changes
+        run: |
+          git fetch origin QA  # 🔥 Asegura que tenemos la última versión de QA
+          if git diff --quiet origin/QA..temp-willian-qa; then
+            echo "🚀 No hay cambios nuevos entre WILLIAN y QA. No se creará un PR."
+            exit 0  # 🔥 Detiene el workflow sin error
+          fi
 
       - name: Close Existing PR (If Any)
         run: |

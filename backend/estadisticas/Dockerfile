@@ -1,17 +1,21 @@
-# Imagen base
+# Usa Go como base
 FROM golang:1.22
 
-# Crear directorio de la app
+# Configurar directorio de trabajo
 WORKDIR /app
 
-# Copiar archivos al contenedor
+# Copiar archivos y dependencias
+COPY go.mod go.sum ./
+RUN go mod tidy
+
+# Copiar el código fuente
 COPY . .
 
-# Descargar dependencias
-RUN go mod init estadisticas && go mod tidy
-
-# Compilar el binario
+# Compilar el código
 RUN go build -o estadisticas
 
-# Ejecutar el binario
-CMD ["/app/estadisticas"]
+# Exponer el puerto
+EXPOSE 8080
+
+# Ejecutar la aplicación
+CMD ["./estadisticas"]

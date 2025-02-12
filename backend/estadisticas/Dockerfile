@@ -1,16 +1,23 @@
 FROM php:8.2-cli
 
-# Instalar extensiones necesarias
-RUN docker-php-ext-install mysqli pdo pdo_mysql
+# Instalar extensiones y herramientas necesarias
+RUN apt-get update && apt-get install -y \
+    git \
+    unzip \
+    zip \
+    && docker-php-ext-install pdo pdo_mysql mysqli
 
-# Copiar los archivos al contenedor
-WORKDIR /app
-COPY server.php .
-
-# Instalar Composer y dependencias
+# Instalar Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-COPY composer.json ./
-RUN composer install
 
-# Exponer puerto 4000 y ejecutar el servidor PHP
+# Crear directorio de la aplicación
+WORKDIR /app
+
+# Copiar los archivos del proyecto
+COPY composer.json ./
+RUN composer install --no-dev --prefer-dist --optimize-autoloader
+
+COPY server.php ./
+
+# Exponer el puerto 4000 y ejecutar el servidor PHP
 CMD php -S 0.0.0.0:4000 -t /app

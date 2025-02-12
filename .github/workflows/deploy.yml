@@ -25,9 +25,8 @@ jobs:
         run: |
           ssh ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
           echo "🚀 Conectado a EC2, actualizando código..."
-          
-          # Usar sudo para cambiar al directorio y ejecutar comandos
-          sudo -u ubuntu bash << 'EOL'
+
+          # Asegúrate de usar una ruta absoluta correcta, no cd ~
           cd /distributed-app/backend/User-Management || exit 1
           echo "Directorio actual:"
           pwd  # Verifica el directorio actual
@@ -54,9 +53,8 @@ jobs:
           
           docker-compose up --build -d  # 🔥 Ejecuta el `docker-compose up --build` en la ruta correcta
           echo "✅ Contenedores actualizados correctamente."
-          EOL
           EOF
-          
+
   create-pull-request:
     name: Create PR from WILLIAN to QA
     needs: deploy-to-ec2  # 🔥 Se ejecuta solo después de actualizar EC2

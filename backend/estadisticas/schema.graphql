@@ -1,0 +1,14 @@
+type Reserva {
+    id_reserva: ID!
+    id_usuario: Int!
+    id_vuelo: Int!
+    fecha_reserva: String!
+    estado: String!
+    total_pagado: Float!
+}
+
+type Query {
+    reservasPorUsuario(id_usuario: Int!): [Reserva]!
+    totalIngresos: Float!
+    reservasPorDestino(destino: String!): Int!
+}

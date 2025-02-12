@@ -36,8 +36,6 @@ jobs:
           echo "Comprobando el estado de Git..."
           git status  # Asegura que estamos en un repositorio Git válido
 
-
-
           git checkout WILLIAN
           git pull origin WILLIAN
           echo "✅ Código actualizado correctamente."
@@ -85,9 +83,18 @@ jobs:
       - name: Check if There Are Changes
         run: |
           git fetch origin QA  # 🔥 Asegura que tenemos la última versión de QA
+          # Verifica si hay cambios entre las ramas
           if git rev-list origin/QA..temp-willian-qa --count | grep -q '^0$'; then
             echo "🚀 No hay cambios nuevos entre WILLIAN y QA. No se creará un PR."
-            exit 0  # 🔥 Detiene el workflow sin error
+            exit 0  # 🔥 Detiene el workflow sin error si no hay cambios
+          fi
+
+      - name: Check if PR Already Exists
+        run: |
+          EXISTING_PR=$(gh pr list --base QA --head temp-willian-qa --json number --jq '.[0].number')
+          if [[ -n "$EXISTING_PR" ]]; then
+            echo "🚀 Un PR ya está en cola. No se creará un nuevo PR."
+            exit 0  # Si ya hay un PR en cola, detén el flujo
           fi
 
       - name: Close Existing PR (If Any)

@@ -1,44 +1,72 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from datetime import datetime
-from models import db_postgres, Booking
+from flasgger import Swagger
 from config import Config
+from models import db_postgres
+from services import update_booking_service
 
 app = Flask(__name__)
 app.config.from_object(Config)
 db_postgres.init_app(app)
 CORS(app)
+swagger = Swagger(app)
+
+@app.route('/health', methods=['GET'])
+def health():
+    """
+    Health Check
+    ---
+    responses:
+      200:
+        description: API is running
+    """
+    return jsonify(status="ok"), 200
 
 @app.route('/booking/<int:id>', methods=['PUT'])
 def update_booking(id):
+    """
+    Update a booking
+    ---
+    tags:
+      - Bookings
+    parameters:
+      - name: id
+        in: path
+        type: integer
+        required: true
+        description: Booking ID to update
+      - name: body
+        in: body
+        required: true
+        schema:
+          type: object
+          properties:
+            user_id:
+              type: integer
+              example: 123
+            flight_id:
+              type: integer
+              example: 456
+            booking_date:
+              type: string
+              format: date-time
+              example: "2025-02-11T12:30:00"
+            status:
+              type: string
+              example: "confirmed"
+    responses:
+      200:
+        description: Booking updated successfully
+      400:
+        description: Bad request (missing fields)
+      404:
+        description: Booking not found
+      500:
+        description: Internal Server Error
+    """
     data = request.get_json()
-    user_id = data.get('user_id')
-    flight_id = data.get('flight_id')
-    booking_date = data.get('booking_date')
-    status = data.get('status')
-
-    if not any([user_id, flight_id, booking_date, status]):
-        return jsonify({'error': 'At least one field (user_id, flight_id, booking_date, status) is required for update.'}), 400
-
-    booking = Booking.query.get(id)
-    if not booking:
-        return jsonify({'error': 'Booking not found.'}), 404
-
-    try:
-        if user_id:
-            booking.user_id = user_id
-        if flight_id:
-            booking.flight_id = flight_id
-        if booking_date:
-            booking.booking_date = datetime.strptime(booking_date, '%Y-%m-%d').date()
-        if status:
-            booking.status = status 
-
-        db_postgres.session.commit()
-        return jsonify({'message': 'Booking updated successfully.'}), 200
-    except Exception as e:
-        db_postgres.session.rollback()
-        return jsonify({'error': str(e)}), 500
+    response, status_code = update_booking_service(id, data)
+    return jsonify(response), status_code
 
 if __name__ == '__main__':
     with app.app_context():

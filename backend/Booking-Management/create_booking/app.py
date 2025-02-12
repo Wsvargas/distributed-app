@@ -1,44 +1,69 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from flasgger import Swagger
 from config import Config
-from models import db_postgres, Booking
-from datetime import datetime
+from models import db_postgres
+from services import create_booking_service 
 
 app = Flask(__name__)
 app.config.from_object(Config)
 db_postgres.init_app(app)
 CORS(app)
+swagger = Swagger(app)
+
+@app.route('/health', methods=['GET'])
+def health():
+    """
+    Health Check
+    ---
+    responses:
+      200:
+        description: API is running
+    """
+    return jsonify(status="ok"), 200
 
 @app.route('/booking', methods=['POST'])
 def create_booking():
+    """
+    Create a new booking
+    ---
+    tags:
+      - Bookings
+    parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          type: object
+          required:
+            - user_id
+            - flight_id
+            - booking_date
+          properties:
+            user_id:
+              type: integer
+              example: 123
+            flight_id:
+              type: integer
+              example: 456
+            booking_date:
+              type: string
+              format: date-time
+              example: "2025-02-11T12:30:00"
+            status:
+              type: string
+              example: "confirmed"
+    responses:
+      201:
+        description: Booking created successfully
+      400:
+        description: Missing required fields
+      500:
+        description: Internal Server Error
+    """
     data = request.get_json()
-    user_id = data.get('user_id')
-    flight_id = data.get('flight_id')
-    booking_date = data.get('booking_date')
-    status = data.get('status', 'pending')  # Default to 'pending' if not provided
-
-    # Validate required fields
-    if not user_id or not flight_id or not booking_date:
-        return jsonify({'error': 'User ID, flight ID, and booking date are required'}), 400
-
-    try:
-        # Parse booking_date string to datetime
-        booking_date = datetime.strptime(booking_date, '%Y-%m-%dT%H:%M:%S')
-
-        # Create a new booking instance
-        new_booking = Booking(
-            user_id=user_id,
-            flight_id=flight_id,
-            booking_date=booking_date,
-            status=status
-        )
-
-        db_postgres.session.add(new_booking)
-        db_postgres.session.commit()
-        return jsonify({'message': 'Booking created successfully'}), 201
-    except Exception as e:
-        db_postgres.session.rollback()
-        return jsonify({'error': str(e)}), 500
+    response, status_code = create_booking_service(data)  # Llamamos a la función en `services.py`
+    return jsonify(response), status_code
 
 if __name__ == '__main__':
     with app.app_context():

@@ -1,30 +1,107 @@
-name: Auto Pull Request
+name: Deploy to EC2 & Auto PR to QA
 
 on:
   push:
     branches:
-      - WILLIAN
+      - WILLIAN  # 🚀 Se ejecuta cuando hay cambios en la rama WILLIAN test1
 
 jobs:
-  create-pull-request:
+  deploy-to-ec2:
+    name: Deploy to EC2
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v3
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Update Code on EC2 and Restart Services
+        run: |
+          ssh ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
+          echo "🚀 Conectado a EC2, actualizando código..."
+
+          # Cambiaremos la ruta a la nueva ubicación del repositorio
+          cd /Home/distributed-app/backend/User-Management || exit 1
+          echo "Directorio actual:"
+          pwd
+          ls    # Lista los archivos para verificar si el repositorio Git y docker-compose.yml están presentes
+
+          # Verificar el estado de git
+          echo "Comprobando el estado de Git..."
+          git status  # Asegura que estamos en un repositorio Git válido
+
+
+
+          git checkout WILLIAN
+          git pull origin WILLIAN
+          echo "✅ Código actualizado correctamente."
+
+          echo "🚀 Reconstruyendo contenedores..."
+          
+          # Verificar la existencia de docker-compose.yml
+          if [ ! -f docker-compose.yml ]; then
+            echo "❌ Error: El archivo docker-compose.yml no se encuentra en el directorio actual."
+            exit 1
+          fi
+          
+          docker-compose up --build -d  # 🔥 Ejecuta el `docker-compose up --build` en la ruta correcta
+          echo "✅ Contenedores actualizados correctamente."
+          EOF
+
+  create-pull-request:
+    name: Create PR from WILLIAN to QA
+    needs: deploy-to-ec2  # 🔥 Se ejecuta solo después de actualizar EC2
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          base: QA  # Cambia "branch" por "base" para asegurarte de que se cree un PR en QA
-          branch: auto-pr-willian-to-qa  # Crea una rama temporal en lugar de actualizar directamente QA
-          title: 'Automated Pull Request from WILLIAN to QA'
-          body: |
-            This pull request has been automatically created to merge changes from `WILLIAN` into `QA`.
-            Please review and approve the changes.
-          labels: 'automerge,in-review'
-          reviewers: 'AlexandraN2001,JuanGuevara90,Wsvargas'
-          draft: false  # Asegura que el PR no sea borrador
-          assignees: 'JuanGuevara90'  # Opcional, para asignar un revisor directo
-          delete-branch: true  # Elimina la rama temporal después del merge
+          fetch-depth: 0  # Asegura que tenemos todo el historial
+
+      - name: Fetch All Branches
+        run: |
+          git fetch --all  # 🔥 Descarga todas las referencias remotas
+          git branch -r    # 🔥 Lista las ramas remotas para verificar
+
+      - name: Ensure QA Branch Exists
+        run: |
+          if ! git show-ref --quiet refs/remotes/origin/QA; then
+            echo "❌ Error: La rama QA no existe en el repositorio remoto."
+            exit 1
+          fi
+
+      - name: Create Temporary Branch for PR
+        run: |
+          git checkout -b temp-willian-qa origin/WILLIAN  # Creación de la rama local temp-willian-qa basada en WILLIAN
+          git push origin temp-willian-qa
+
+      - name: Check if There Are Changes
+        run: |
+          git fetch origin QA  # 🔥 Asegura que tenemos la última versión de QA
+          if [ $(git rev-list --count origin/QA..temp-willian-qa) -eq 0 ]; then
+            echo "🚀 No hay cambios nuevos entre WILLIAN y QA. No se creará un PR."
+            exit 0  # 🔥 Detiene el workflow sin error si no hay cambios
+          fi
+
+      - name: Check if PR Already Exists and Close It
+        run: |
+          EXISTING_PR=$(gh pr list --base QA --head temp-willian-qa --json number --jq '.[0].number')
+          if [[ -n "$EXISTING_PR" ]]; then
+            echo "🚀 Cerrando PR existente: #$EXISTING_PR"
+            gh pr close "$EXISTING_PR" --delete-branch
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.EC2_TOKEN_GIT }}  # 🚀 Añadir el token aquí
+
+      - name: Create Pull Request Manually
+        run: |
+          gh pr create --base QA --head temp-willian-qa --title "🚀 PR: Merge WILLIAN into QA" --body "Este PR requiere revisión y aprobación manual."
+        env:
+          GITHUB_TOKEN: ${{ secrets.EC2_TOKEN_GIT }}  # 🚀 Añadir el token aquí

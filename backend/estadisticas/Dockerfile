@@ -1,17 +1,16 @@
-# Usamos PHP 8.2 CLI con extensiones necesarias
 FROM php:8.2-cli
 
-# Instalamos las extensiones necesarias para MariaDB (MySQL)
-RUN docker-php-ext-install mysqli
+# Instalar extensiones necesarias
+RUN docker-php-ext-install mysqli pdo pdo_mysql
 
-# Creamos y establecemos el directorio de trabajo
+# Copiar los archivos al contenedor
 WORKDIR /app
-
-# Copiamos el archivo del servidor
 COPY server.php .
 
-# Exponemos el puerto 4000
-EXPOSE 4000
+# Instalar Composer y dependencias
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+COPY composer.json ./
+RUN composer install
 
-# Comando para iniciar el servidor
-CMD ["php", "-S", "0.0.0.0:4000", "-t", "."]
+# Exponer puerto 4000 y ejecutar el servidor PHP
+CMD php -S 0.0.0.0:4000 -t /app

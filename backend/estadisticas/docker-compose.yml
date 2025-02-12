@@ -1,11 +1,11 @@
-version: "3"
 services:
   estadisticas:
     build: .
+    container_name: estadisticas-service
     ports:
       - "4000:4000"
     environment:
-      - DB_HOST=estadisticas.ctomew44ejiz.us-east-1.rds.amazonaws.com
-      - DB_USER=admin
-      - DB_PASSWORD=password
-      - DB_NAME=estadisticas
+      DB_HOST: "estadisticas.ctomew44ejiz.us-east-1.rds.amazonaws.com"
+      DB_NAME: "estadisticas"
+      DB_USER: "admin"
+      DB_PASS: "password"

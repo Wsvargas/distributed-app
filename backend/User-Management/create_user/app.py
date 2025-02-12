@@ -1,12 +1,10 @@
 from flask import Flask, request, jsonify
-from flask_cors import CORS
 from models import db, User
 from config import Config
 
 app = Flask(__name__)
 app.config.from_object(Config)
 db.init_app(app)
-CORS(app) 
 
 @app.route('/users', methods=['POST'])
 def create_user():
@@ -16,8 +14,8 @@ def create_user():
     phone = data.get('phone')
     password = data.get('password')
     date_of_birth = data.get('date_of_birth')
-    role = data.get('role', 'user')  # t
-    is_active = data.get('is_active', True)  # Default to True if no value provided  new test 7 assdsa
+    role = data.get('role', 'user')  # Default to 'user' if no role is provided
+    is_active = data.get('is_active', True)  # Default to True if no value provided
 
     if not name or not email or not password:
         return jsonify({'error': 'Name, email, and password are required'}), 400

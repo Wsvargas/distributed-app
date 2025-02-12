@@ -1,0 +1,11 @@
+{
+	"folders": [
+		{
+			"path": "../distributed"
+		},
+		{
+			"path": "../frontend"
+		}
+	],
+	"settings": {}
+}

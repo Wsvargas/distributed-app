@@ -79,8 +79,7 @@ jobs:
 
       - name: Create Temporary Branch for PR
         run: |
-          git checkout origin/WILLIAN  # Asegúrate de estar basado en la rama WILLIAN
-          git checkout -b temp-willian-qa
+          git checkout -b temp-willian-qa origin/WILLIAN  # Creación de la rama local temp-willian-qa basada en WILLIAN
           git push origin temp-willian-qa
 
       - name: Check if There Are Changes

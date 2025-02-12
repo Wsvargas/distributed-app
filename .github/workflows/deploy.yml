@@ -79,16 +79,28 @@ jobs:
 
       - name: Create Temporary Branch for PR
         run: |
-          git checkout -b temp-willian-qa origin/WILLIAN
+          git checkout origin/WILLIAN  # Asegúrate de estar basado en la rama WILLIAN
+          git checkout -b temp-willian-qa
           git push origin temp-willian-qa
 
       - name: Check if There Are Changes
         run: |
           git fetch origin QA  # 🔥 Asegura que tenemos la última versión de QA
+          # Verifica si hay cambios entre las ramas
           if git rev-list origin/QA..temp-willian-qa --count | grep -q '^0$'; then
             echo "🚀 No hay cambios nuevos entre WILLIAN y QA. No se creará un PR."
-            exit 0  # 🔥 Detiene el workflow sin error
+            exit 0  # 🔥 Detiene el workflow sin error si no hay cambios
           fi
+
+      - name: Check if PR Already Exists
+        run: |
+          EXISTING_PR=$(gh pr list --base QA --head temp-willian-qa --json number --jq '.[0].number')
+          if [[ -n "$EXISTING_PR" ]]; then
+            echo "🚀 Un PR ya está en cola. No se creará un nuevo PR."
+            exit 0  # Si ya hay un PR en cola, detén el flujo
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # 🚀 Añadir el token aquí
 
       - name: Close Existing PR (If Any)
         run: |
@@ -98,11 +110,10 @@ jobs:
             gh pr close "$EXISTING_PR" --delete-branch
           fi
         env:
-          GITHUB_TOKEN: ${{ secrets.EC2_TOKEN_GIT }}  # 🚀 Usar el token correcto
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # 🚀 Añadir el token aquí
 
       - name: Create Pull Request Manually
         run: |
           gh pr create --base QA --head temp-willian-qa --title "🚀 PR: Merge WILLIAN into QA" --body "Este PR requiere revisión y aprobación manual."
         env:
-          GITHUB_TOKEN: ${{ secrets.EC2_TOKEN_GIT }}  # 🚀 Usar el token correcto
-
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # 🚀 Añadir el token aquí

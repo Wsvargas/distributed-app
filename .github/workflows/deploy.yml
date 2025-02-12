@@ -3,7 +3,7 @@ name: Deploy to EC2 & Auto PR to QA
 on:
   push:
     branches:
-      - WILLIAN  # 🚀 Se ejecuta cuando hay cambios en la rama WILLIAN
+      - WILLIAN  # 🚀 Se ejecuta cuando hay cambios en la rama WILLIAN test1
 
 jobs:
   deploy-to-ec2:

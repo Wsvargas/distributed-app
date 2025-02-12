@@ -2,146 +2,99 @@ package main
 
 import (
 	"database/sql"
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
-	"time"
 
-	"github.com/go-sql-driver/mysql"
-	"github.com/graphql-go/graphql"
-	"github.com/graphql-go/handler"
+	"github.com/99designs/gqlgen/graphql/handler"
+	"github.com/99designs/gqlgen/graphql/handler/lru"
+	"github.com/99designs/gqlgen/graphql/handler/playground"
+	"github.com/99designs/gqlgen/graphql/schema"
+	_ "github.com/go-sql-driver/mysql"
 )
 
-// Configuración de la base de datos
+// Configuración de conexión a MariaDB en RDS AWS
+const dbUser = "admin"
+const dbPass = "password"
+const dbHost = "estadisticas.ctomew44ejiz.us-east-1.rds.amazonaws.com"
+const dbPort = "3306"
+const dbName = "estadisticas"
+
 var db *sql.DB
 
-func connectDatabase() {
-	dsn := "admin:password@tcp(estadisticas.ctomew44ejiz.us-east-1.rds.amazonaws.com:3306)/estadisticas"
+// Estructura para Reservas
+type Reserva struct {
+	ID        int    `json:"id"`
+	UsuarioID int    `json:"usuario_id"`
+	VueloID   int    `json:"vuelo_id"`
+	Estado    string `json:"estado"`
+}
+
+// Resolver GraphQL
+var resolvers = struct {
+	Query struct {
+		Reservas func() ([]Reserva, error)
+	}
+}{
+	Query: struct {
+		Reservas func() ([]Reserva, error)
+	}{
+		Reservas: func() ([]Reserva, error) {
+			rows, err := db.Query("SELECT id_reserva, id_usuario, id_vuelo, estado FROM reservas")
+			if err != nil {
+				return nil, err
+			}
+			defer rows.Close()
+
+			var reservas []Reserva
+			for rows.Next() {
+				var r Reserva
+				if err := rows.Scan(&r.ID, &r.UsuarioID, &r.VueloID, &r.Estado); err != nil {
+					return nil, err
+				}
+				reservas = append(reservas, r)
+			}
+			return reservas, nil
+		},
+	},
+}
+
+// Definir esquema GraphQL en string
+const schemaString = `
+schema {
+    query: Query
+}
+
+type Query {
+    reservas: [Reserva!]!
+}
+
+type Reserva {
+    id: ID!
+    usuario_id: Int!
+    vuelo_id: Int!
+    estado: String!
+}`
+
+// Función principal
+func main() {
+	// Conectar a MariaDB
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", dbUser, dbPass, dbHost, dbPort, dbName)
 	var err error
 	db, err = sql.Open("mysql", dsn)
 	if err != nil {
-		log.Fatalf("❌ Error al conectar a MariaDB: %v", err)
+		log.Fatal("❌ Error conectando a MariaDB:", err)
 	}
-	if err = db.Ping(); err != nil {
-		log.Fatalf("❌ No se pudo hacer ping a la base de datos: %v", err)
-	}
-	log.Println("✅ Conectado a MariaDB en AWS RDS")
-}
+	defer db.Close()
 
-// Definir modelo de reserva
-type Reserva struct {
-	IDReserva    int     `json:"id_reserva"`
-	IDUsuario    int     `json:"id_usuario"`
-	IDVuelo      int     `json:"id_vuelo"`
-	FechaReserva string  `json:"fecha_reserva"`
-	Estado       string  `json:"estado"`
-	TotalPagado  float64 `json:"total_pagado"`
-}
+	// Configurar GraphQL
+	execSchema := schema.MustParse(schemaString)
+	srv := handler.New(execSchema.Exec(resolvers))
+	srv.SetQueryCache(lru.New(1000))
 
-// Definir esquema GraphQL
-var reservaType = graphql.NewObject(
-	graphql.ObjectConfig{
-		Name: "Reserva",
-		Fields: graphql.Fields{
-			"id_reserva":    &graphql.Field{Type: graphql.Int},
-			"id_usuario":    &graphql.Field{Type: graphql.Int},
-			"id_vuelo":      &graphql.Field{Type: graphql.Int},
-			"fecha_reserva": &graphql.Field{Type: graphql.String},
-			"estado":        &graphql.Field{Type: graphql.String},
-			"total_pagado":  &graphql.Field{Type: graphql.Float},
-		},
-	},
-)
+	http.Handle("/graphql", srv)
+	http.Handle("/", playground.Handler("GraphQL Playground", "/graphql"))
 
-// Definir esquema con Queries y Mutations
-var rootQuery = graphql.NewObject(graphql.ObjectConfig{
-	Name: "Query",
-	Fields: graphql.Fields{
-		"obtenerReservasPorUsuario": &graphql.Field{
-			Type: graphql.NewList(reservaType),
-			Args: graphql.FieldConfigArgument{"id_usuario": &graphql.ArgumentConfig{Type: graphql.Int}},
-			Resolve: func(params graphql.ResolveParams) (interface{}, error) {
-				idUsuario := params.Args["id_usuario"].(int)
-				return obtenerReservasPorUsuario(idUsuario)
-			},
-		},
-	},
-})
-
-var rootMutation = graphql.NewObject(graphql.ObjectConfig{
-	Name: "Mutation",
-	Fields: graphql.Fields{
-		"crearReserva": &graphql.Field{
-			Type: reservaType,
-			Args: graphql.FieldConfigArgument{
-				"id_usuario":   &graphql.ArgumentConfig{Type: graphql.Int},
-				"id_vuelo":     &graphql.ArgumentConfig{Type: graphql.Int},
-				"total_pagado": &graphql.ArgumentConfig{Type: graphql.Float},
-			},
-			Resolve: func(params graphql.ResolveParams) (interface{}, error) {
-				idUsuario := params.Args["id_usuario"].(int)
-				idVuelo := params.Args["id_vuelo"].(int)
-				totalPagado := params.Args["total_pagado"].(float64)
-				return crearReserva(idUsuario, idVuelo, totalPagado)
-			},
-		},
-	},
-})
-
-var schema, _ = graphql.NewSchema(graphql.SchemaConfig{
-	Query:    rootQuery,
-	Mutation: rootMutation,
-})
-
-// Función para obtener reservas de un usuario
-func obtenerReservasPorUsuario(idUsuario int) ([]Reserva, error) {
-	query := "SELECT id_reserva, id_usuario, id_vuelo, fecha_reserva, estado, total_pagado FROM reservas WHERE id_usuario = ?"
-	rows, err := db.Query(query, idUsuario)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var reservas []Reserva
-	for rows.Next() {
-		var r Reserva
-		err := rows.Scan(&r.IDReserva, &r.IDUsuario, &r.IDVuelo, &r.FechaReserva, &r.Estado, &r.TotalPagado)
-		if err != nil {
-			return nil, err
-		}
-		reservas = append(reservas, r)
-	}
-	return reservas, nil
-}
-
-// Función para crear una nueva reserva
-func crearReserva(idUsuario, idVuelo int, totalPagado float64) (*Reserva, error) {
-	query := "INSERT INTO reservas (id_usuario, id_vuelo, fecha_reserva, estado, total_pagado) VALUES (?, ?, ?, 'confirmada', ?)"
-	fecha := time.Now().Format("2006-01-02 15:04:05")
-	result, err := db.Exec(query, idUsuario, idVuelo, fecha, totalPagado)
-	if err != nil {
-		return nil, err
-	}
-
-	id, err := result.LastInsertId()
-	if err != nil {
-		return nil, err
-	}
-
-	return &Reserva{IDReserva: int(id), IDUsuario: idUsuario, IDVuelo: idVuelo, FechaReserva: fecha, Estado: "confirmada", TotalPagado: totalPagado}, nil
-}
-
-func main() {
-	connectDatabase()
-
-	h := handler.New(&handler.Config{
-		Schema:   &schema,
-		Pretty:   true,
-		GraphiQL: true,
-	})
-
-	http.Handle("/graphql", h)
-	fmt.Println("🚀 Servidor GraphQL corriendo en http://localhost:8080/graphql")
+	fmt.Println("🚀 Servidor corriendo en http://localhost:8080/")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }

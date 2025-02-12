@@ -100,7 +100,7 @@ jobs:
             exit 0  # Si ya hay un PR en cola, detén el flujo
           fi
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # 🚀 Añadir el token aquí
+          GITHUB_TOKEN: ${{ secrets.EC2_TOKEN_GIT }}  # 🚀 Añadir el token aquí
 
       - name: Close Existing PR (If Any)
         run: |
@@ -110,10 +110,10 @@ jobs:
             gh pr close "$EXISTING_PR" --delete-branch
           fi
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # 🚀 Añadir el token aquí
+          GITHUB_TOKEN: ${{ secrets.EC2_TOKEN_GIT }}  # 🚀 Añadir el token aquí
 
       - name: Create Pull Request Manually
         run: |
           gh pr create --base QA --head temp-willian-qa --title "🚀 PR: Merge WILLIAN into QA" --body "Este PR requiere revisión y aprobación manual."
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # 🚀 Añadir el token aquí
+          GITHUB_TOKEN: ${{ secrets.EC2_TOKEN_GIT }}  # 🚀 Añadir el token aquí

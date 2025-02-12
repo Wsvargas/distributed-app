@@ -25,7 +25,18 @@ jobs:
         run: |
           ssh ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
           echo "🚀 Conectado a EC2, actualizando código..."
-          cd /distributed-app/backend/User-Management  # 🔥 Se asegura de estar en el directorio correcto
+          
+          # Verificar si estamos en el directorio correcto
+          cd /distributed-app/backend/User-Management || exit 1
+          echo "Directorio actual:"
+          pwd  # Verifica el directorio actual
+          ls    # Lista los archivos para verificar si el repositorio Git y docker-compose.yml están presentes
+
+          # Verificar el estado de git
+          echo "Comprobando el estado de Git..."
+          git status  # Asegura que estamos en un repositorio Git válido
+
+          echo "Actualizando el código desde Git..."
           git fetch origin
           git checkout WILLIAN
           git reset --hard origin/WILLIAN
@@ -33,6 +44,13 @@ jobs:
           echo "✅ Código actualizado correctamente."
 
           echo "🚀 Reconstruyendo contenedores..."
+          
+          # Verificar la existencia de docker-compose.yml
+          if [ ! -f docker-compose.yml ]; then
+            echo "❌ Error: El archivo docker-compose.yml no se encuentra en el directorio actual."
+            exit 1
+          fi
+          
           docker-compose up --build -d  # 🔥 Ejecuta el `docker-compose up --build` en la ruta correcta
           echo "✅ Contenedores actualizados correctamente."
           EOF

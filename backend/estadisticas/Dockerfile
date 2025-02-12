@@ -1,6 +1,6 @@
 FROM php:8.2-cli
 
-# Instalar extensiones y herramientas necesarias
+# Instalar dependencias necesarias
 RUN apt-get update && apt-get install -y \
     git \
     unzip \
@@ -13,7 +13,7 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 # Crear directorio de la aplicación
 WORKDIR /app
 
-# Copiar los archivos del proyecto
+# Copiar archivos del proyecto
 COPY composer.json ./
 RUN composer install --no-dev --prefer-dist --optimize-autoloader
 

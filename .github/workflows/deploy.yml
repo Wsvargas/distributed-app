@@ -85,8 +85,7 @@ jobs:
       - name: Check if There Are Changes
         run: |
           git fetch origin QA  # 🔥 Asegura que tenemos la última versión de QA
-          # Verifica si hay cambios entre las ramas
-          if git rev-list origin/QA..temp-willian-qa --count | grep -q '^0$'; then
+          if [ $(git rev-list --count origin/QA..temp-willian-qa) -eq 0 ]; then
             echo "🚀 No hay cambios nuevos entre WILLIAN y QA. No se creará un PR."
             exit 0  # 🔥 Detiene el workflow sin error si no hay cambios
           fi

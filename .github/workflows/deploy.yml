@@ -91,17 +91,7 @@ jobs:
             exit 0  # 🔥 Detiene el workflow sin error si no hay cambios
           fi
 
-      - name: Check if PR Already Exists
-        run: |
-          EXISTING_PR=$(gh pr list --base QA --head temp-willian-qa --json number --jq '.[0].number')
-          if [[ -n "$EXISTING_PR" ]]; then
-            echo "🚀 Un PR ya está en cola. No se creará un nuevo PR."
-            exit 0  # Si ya hay un PR en cola, detén el flujo
-          fi
-        env:
-          GITHUB_TOKEN: ${{ secrets.EC2_TOKEN_GIT }}  # 🚀 Añadir el token aquí
-
-      - name: Close Existing PR (If Any)
+      - name: Check if PR Already Exists and Close It
         run: |
           EXISTING_PR=$(gh pr list --base QA --head temp-willian-qa --json number --jq '.[0].number')
           if [[ -n "$EXISTING_PR" ]]; then

@@ -29,17 +29,16 @@ jobs:
           # Cambiaremos la ruta a la nueva ubicación del repositorio
           cd /Home/distributed-app/backend/User-Management || exit 1
           echo "Directorio actual:"
-          pwd  # Verifica el directorio actual
+          pwd
           ls    # Lista los archivos para verificar si el repositorio Git y docker-compose.yml están presentes
 
           # Verificar el estado de git
           echo "Comprobando el estado de Git..."
           git status  # Asegura que estamos en un repositorio Git válido
 
-          echo "Actualizando el código desde Git..."
-          git fetch origin
+
+
           git checkout WILLIAN
-          git reset --hard origin/WILLIAN
           git pull origin WILLIAN
           echo "✅ Código actualizado correctamente."
 

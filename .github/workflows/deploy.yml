@@ -50,7 +50,7 @@ jobs:
             exit 1
           fi
           
-          docker-compose up --build  # 🔥 Ejecuta el `docker-compose up --build` en la ruta correcta
+          docker-compose up --build -d  # 🔥 Ejecuta el `docker-compose up --build` en la ruta correcta
           echo "✅ Contenedores actualizados correctamente."
           EOF
 

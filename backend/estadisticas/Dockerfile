@@ -1,31 +1,17 @@
-# Usa Go como imagen base
-FROM golang:1.22 AS builder
+# Usamos PHP 8.2 CLI con extensiones necesarias
+FROM php:8.2-cli
 
-# Configurar directorio de trabajo
+# Instalamos las extensiones necesarias para MariaDB (MySQL)
+RUN docker-php-ext-install mysqli
+
+# Creamos y establecemos el directorio de trabajo
 WORKDIR /app
 
-# Copiar archivos de dependencias primero (para aprovechar la cache)
-COPY go.mod go.sum ./
-RUN go mod tidy
+# Copiamos el archivo del servidor
+COPY server.php .
 
-# Copiar el código fuente
-COPY . .
+# Exponemos el puerto 4000
+EXPOSE 4000
 
-# Compilar el código
-RUN go build -o estadisticas
-
-# Crear una imagen final más ligera
-FROM alpine:latest
-WORKDIR /root/
-
-# Instalar dependencias mínimas necesarias
-RUN apk add --no-cache ca-certificates
-
-# Copiar el binario compilado desde el builder
-COPY --from=builder /app/estadisticas .
-
-# Exponer el puerto
-EXPOSE 8080
-
-# Ejecutar la aplicación
-CMD ["./estadisticas"]
+# Comando para iniciar el servidor
+CMD ["php", "-S", "0.0.0.0:4000", "-t", "."]

@@ -17,10 +17,14 @@ jobs:
         uses: peter-evans/create-pull-request@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          branch: QA
+          base: QA  # Cambia "branch" por "base" para asegurarte de que se cree un PR en QA
+          branch: auto-pr-willian-to-qa  # Crea una rama temporal en lugar de actualizar directamente QA
           title: 'Automated Pull Request from WILLIAN to QA'
           body: |
-            This pull request has been automatically created to merge changes from the `WILLIAN` branch into the `QA` branch.
+            This pull request has been automatically created to merge changes from `WILLIAN` into `QA`.
             Please review and approve the changes.
-          labels: 'automerge,in-review'  # Aquí está el cambio: usando una cadena en lugar de una lista
-          reviewers: 'AlexandraN2001,JuanGuevara90,Wsvargas'  # Reemplaza con los usuarios colaboradores de tu repositorio
+          labels: 'automerge,in-review'
+          reviewers: 'AlexandraN2001,JuanGuevara90,Wsvargas'
+          draft: false  # Asegura que el PR no sea borrador
+          assignees: 'JuanGuevara90'  # Opcional, para asignar un revisor directo
+          delete-branch: true  # Elimina la rama temporal después del merge
